@@ -1,0 +1,8 @@
+.gradle/
+build/
+!gradle/wrapper/
+!gradlew
+!gradlew.bat
+
+# Documentación y publicaciones
+docs/publis/
