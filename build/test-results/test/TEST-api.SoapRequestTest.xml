@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="api.SoapRequestTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-03-29T04:16:26.182Z" hostname="DESKTOP-G5GFJ21" time="1.688">
+  <properties/>
+  <testcase name="testSoarequest" classname="api.SoapRequestTest" time="1.688"/>
+  <system-out><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <m:NumberToWordsResponse xmlns:m="http://www.dataaccess.com/webservicesserver/">
+      <m:NumberToWordsResult>five hundred </m:NumberToWordsResult>
+    </m:NumberToWordsResponse>
+  </soap:Body>
+</soap:Envelope>
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
