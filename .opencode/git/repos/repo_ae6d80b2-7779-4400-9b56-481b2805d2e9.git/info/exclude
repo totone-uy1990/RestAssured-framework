@@ -4,3 +4,14 @@
 # exclude patterns (uncomment them if you want to use them):
 # *.[oa]
 # *~
+
+# >>> opencode:workspace-gitignore >>>
+.gradle/
+build/
+!gradle/wrapper/
+!gradlew
+!gradlew.bat
+
+# Documentación y publicaciones
+docs/publis/
+# <<< opencode:workspace-gitignore <<<

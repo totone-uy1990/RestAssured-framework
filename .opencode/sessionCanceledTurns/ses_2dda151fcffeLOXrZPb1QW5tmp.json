@@ -8,5 +8,10 @@
     "userMsgId": "msg_d411cba24001FROIB3onyuJsup",
     "assistantMsgId": "msg_d411ce30e001YJ4RivWihW0FFi",
     "canceledAt": 1774914003379
+  },
+  {
+    "userMsgId": "msg_d4128e498001zcNBVdw8llFAub",
+    "assistantMsgId": "msg_d4128e4a2001r7uNHBl9PRsWVq",
+    "canceledAt": 1774914695996
   }
 ]

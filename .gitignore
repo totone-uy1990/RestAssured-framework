@@ -4,5 +4,9 @@ build/
 !gradlew
 !gradlew.bat
 
-# Documentación y publicaciones
-docs/publis/
+# OpenCode - no subir
+.opencode/
+.opencode/**
+
+# Documentación local
+docs/
