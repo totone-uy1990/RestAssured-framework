@@ -13,5 +13,10 @@
     "userMsgId": "msg_d4128e498001zcNBVdw8llFAub",
     "assistantMsgId": "msg_d4128e4a2001r7uNHBl9PRsWVq",
     "canceledAt": 1774914695996
+  },
+  {
+    "userMsgId": "msg_d41a17478001MMABE3IXrcXzcL",
+    "assistantMsgId": "msg_d41a1749b001goHPbwxeEMSZAh",
+    "canceledAt": 1774922602332
   }
 ]
