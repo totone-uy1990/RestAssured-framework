@@ -89,20 +89,21 @@ public class SoapRequestTest {
                 // navegamos y extraemos el valor de las respuesta:
 
                 // VALUES:
-              //  String xmlResponse = response2.getBody().asString();
+                // String xmlResponse = response2.getBody().asString();
 
-                String result = response2.xmlPath().getString("Envelope.Body.NumberToWordsResponse.NumberToWordsResult"); // xpath estricto
-               
-                                String alternativeResult = response2.xmlPath().getString("**NumberToWordsResult").trim(); // xpath con trim
-                                                                                                    // para eliminar
-                                                                                                    // espacios en
-                                                                                                    // blanco
+                String result = response2.xmlPath()
+                                .getString("Envelope.Body.NumberToWordsResponse.NumberToWordsResult"); // xpath estricto
 
-                // String expectedResult ="five hundred";
+                String alternativeResult = response2.xmlPath().getString("**NumberToWordsResult").trim();
+                /* xpath con trim para eliminar espacios en blanco, Los** sirven para buscar el nodo en cualquier parte del XML, 
+                lo que es útil si no estamos seguros de la estructura exacta de la respuesta o si el resultado 
+                puede contener información adicional además de "five hundred". Sin embargo, es menos eficiente que un xpath específico.
+                 */
+                String expectedResult = "five hundred";
 
                 // validar que el resultado es exactamente "five hundred" usando Assert de
                 // TestNG
-                System.out.println(ANSI_GREEN + "EL RESULTADO ES: "+ alternativeResult + ANSI_R + result);
+                System.out.println(ANSI_GREEN + "EL RESULTADO ES: " + alternativeResult + ANSI_R + result);
 
                 Assert.assertEquals(alternativeResult, "five hundred", "El resultado no es el esperado");
                 /*
