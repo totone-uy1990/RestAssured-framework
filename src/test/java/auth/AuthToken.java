@@ -5,37 +5,31 @@ import io.restassured.http.ContentType;
 import static io.restassured.RestAssured.*;
 
 import org.testng.annotations.Test;
-import io.restassured.response.Response;public class AuthToken {
-    
+import io.restassured.response.Response;
 
-    Response response;
+public class AuthToken {
 
     @Test
-    public Response obtenerToken() {
+    public void testObtenerToken() {
 
         String body = """
                 {
-                 "clientName": "tutoni",
-                 "clientEmail": "Tutoni@gmai.com"
+                 "clientName": "tutonil",
+                 "clientEmail": "Tutoni@gmail.com"
                 }
                     """;
 
-        // obtencion del token
-
-        response = given().baseUri("https://simple-books-api.click")
+        given().baseUri("https://simple-books-api.click")
                 .basePath("/api-clients/")
-                .header("Authorization", "Bearer " + body)
                 .contentType(ContentType.JSON)
                 .body(body)
                 .when()
                 .post()
                 .then()
                 .statusCode(201)
-                .log().all()
-                .extract()
-                .response();
-
-        return response;
+                .log().all();
     }
+
+    String token="fbe20bd25813b1028843eb3babaf72a57ca2548c73ebfa55f67c722ecd9e88c3";
 
 }
