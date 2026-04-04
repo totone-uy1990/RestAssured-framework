@@ -28,6 +28,10 @@ dependencies {
     // XML parsing con Jsoup
     testImplementation 'org.jsoup:jsoup:1.17.2'
 
+    implementation 'net.datafaker:datafaker:2.5.3'
+
+
+    
 }
 
 test {

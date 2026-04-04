@@ -6,21 +6,32 @@ import static io.restassured.RestAssured.*;
 
 import org.testng.annotations.Test;
 import io.restassured.response.Response;
+import org.testng.annotations.BeforeClass;
+import net.datafaker.Faker;
 
 public class AuthToken {
-        // URL REFERENCE:
-        // https://github.com/vdespa/introduction-to-postman-course/blob/main/simple-books-api.md
-        @Test
-        public void testGetToken() {
 
-                String body = """
+        public static final String ANSI_GREEN = "\u001b[32m";
+        public static final String ANSI_RESET = "\u001b[0m";
+
+        private static String token;
+
+        private static Faker faker = new Faker();
+
+        @BeforeClass(alwaysRun = true)
+        public static void testGetToken() {
+                Faker faker = new Faker();
+                String clientName = faker.name().firstName();
+                String clientEmail = faker.internet().emailAddress();
+
+                String body = String.format("""
                                 {
-                                 "clientName": "tutonil",
-                                 "clientEmail": "Tutoni@gmail.com"
-                                }
-                                    """;
+                                 "clientName": "%s",
+                                 "clientEmail": "%s"
+                                 }
+                                    """, clientName, clientEmail);
 
-                given().baseUri("https://simple-books-api.click")
+                Response response = given().baseUri("https://simple-books-api.click")
                                 .basePath("/api-clients/")
                                 .contentType(ContentType.JSON)
                                 .body(body)
@@ -28,20 +39,24 @@ public class AuthToken {
                                 .post()
                                 .then()
                                 .statusCode(201)
-                                .log().all();
+                                .log().all()
+                                .extract().response();
+                
+                System.out.println("Response: " + response.asString());
+                token = response.jsonPath().getString("accessToken");
+                System.out.println(ANSI_GREEN + "Token obtenido: " + token + ANSI_RESET);
         }
 
-        String token = "fbe20bd25813b1028843eb3babaf72a57ca2548c73ebfa55f67c722ecd9e88c3";
-
-        // submit an order with the token obtained in the previous test
         @Test
         public void testSubmitOrder() {
-                String body = """
+                String customerName = faker.name().firstName();
+
+                String body = String.format("""
                                 {
-                                 "bookId": 1,
-                                 "customerName": "Tutoni"
+                                 "bookId": 3,
+                                 "customerName": "%s"
                                 }
-                                    """;
+                                    """, customerName);
 
                 given().baseUri("https://simple-books-api.click")
                                 .basePath("/orders")
@@ -55,37 +70,43 @@ public class AuthToken {
                                 .log().all();
         }
 
-        // other submmit order with auth
-        @Test
-        public void testSubmitOrder2() {
-                String body = """
-                                {
-                                 "bookId": 4,
-                                 "customerName": "Tutoni"
-                                }
-                                    """;
+        String orderId;
 
-                given().baseUri("https://simple-books-api.click")
+        @Test(invocationCount = 2)
+        public void testSubmitOrder2() {
+                String customerName = faker.name().fullName();
+                int bookId = faker.number().numberBetween(1, 6);
+
+                String body = String.format("""
+                                {
+                                 "bookId": %d,
+                                 "customerName": "%s"
+                                }
+                                    """, bookId, customerName);
+
+                Response response = given().baseUri("https://simple-books-api.click")
                                 .basePath("/orders")
                                 .contentType(ContentType.JSON)
-                                .auth().oauth2(token) // other way to pass the token in the header of authorization with
-                                                      // the format "Bearer " + token
+                                .auth().oauth2(token)
                                 .body(body)
                                 .when()
                                 .post()
                                 .then()
                                 .statusCode(201)
-                                .log().all();
+                                .log().all().extract().response();
+
+                orderId = response.jsonPath().getString("orderId");
+
+                System.out.println(ANSI_GREEN + "Order ID: " + orderId + ANSI_RESET);
         }
 
-        // get an order with the token obtained in the previous test
-        @Test
+        @Test(invocationCount = 3)
         public void testGetOrder() {
-                String orderID = "Gku2S33oaqF2NzUz3aDoo";
+
                 Response response = given()
                                 .baseUri("https://simple-books-api.click")
-                                .pathParam("OrderId", orderID) // es simplemente un parametro como valor
-                                .basePath("/orders/{OrderId}") // endpoint con el path parameter
+                                .pathParam("orderId", orderId)
+                                .basePath("/orders/{orderId}")
                                 .contentType(ContentType.JSON)
                                 .header("Authorization", "Bearer " + token)
                                 .when()
@@ -96,15 +117,14 @@ public class AuthToken {
 
         }
 
-        // request with query an pathparameter
         @Test
         public void testGetOrdersWithQueryAndPathParam() {
-                String orderID = "Gku2S33oaqF2NzUz3aDoo";
+
                 Response response = given()
                                 .baseUri("https://simple-books-api.click")
-                                .queryParam("limit", 10) // query parameter para limitar el numero de resultados a 1
-                                .queryParam("type","fiction")                                
-                                .basePath("/books") // endpoint con el path parameter
+                                .queryParam("limit", 10)
+                                .queryParam("type", "fiction")
+                                .basePath("/books")
                                 .contentType(ContentType.JSON)
                                 .header("Authorization", "Bearer " + token)
                                 .when()
@@ -114,6 +134,5 @@ public class AuthToken {
                                 .log().all().extract().response();
 
         }
-
 
 }
