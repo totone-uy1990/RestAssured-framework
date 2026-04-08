@@ -1,8 +1,6 @@
 package api;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.containsString;
-
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -12,7 +10,7 @@ public class SoapRequestTest {
 
         String bodySoapNormalInput = """
                         <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
-                                       xmlns:tns="http://www.dataaccess.com/webservicesserver/">
+                                       xmlns:tns="http://www.dataaccess.com/webservicesserver/">  
                              <soap:Body>
                                    <tns:NumberToWords>
                                             <tns:ubiNum>500</tns:ubiNum>

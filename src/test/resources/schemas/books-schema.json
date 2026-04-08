@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Books Response",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "name": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string",
+        "enum": ["fiction", "non-fiction"]
+      },
+      "available": {
+        "type": "boolean"
+      }
+    },
+    "required": ["id", "name", "type", "available"]
+  }
+}

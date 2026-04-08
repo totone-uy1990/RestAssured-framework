@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Get All Books Query Parameters",
+  "type": "object",
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "description": "Maximum number of books to return",
+      "minimum": 1,
+      "maximum": 100,
+      "examples": [10, 20, 50]
+    },
+    "type": {
+      "type": "string",
+      "description": "Filter books by type",
+      "enum": ["fiction", "non-fiction"],
+      "examples": ["fiction", "non-fiction"]
+    }
+  },
+  "additionalProperties": false,
+  "required": [],
+  "anyOf": [
+    {
+      "required": ["limit"]
+    },
+    {
+      "required": ["type"]
+    }
+  ]
+}

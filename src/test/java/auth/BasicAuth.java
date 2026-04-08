@@ -1,6 +1,5 @@
 package auth;
 
-import static io.restassured.RestAssured.baseURI;
 import static io.restassured.RestAssured.given;
 
 import org.testng.annotations.Test;

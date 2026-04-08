@@ -1,15 +1,16 @@
 package auth;
 
 import io.restassured.http.ContentType;
-
 import static io.restassured.RestAssured.*;
-
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import org.testng.annotations.Test;
 import io.restassured.response.Response;
 import org.testng.annotations.BeforeClass;
 import net.datafaker.Faker;
 
 public class AuthToken {
+
+        // https://github.com/vdespa/introduction-to-postman-course/blob/main/simple-books-api.md
 
         public static final String ANSI_GREEN = "\u001b[32m";
         public static final String ANSI_RESET = "\u001b[0m";
@@ -23,7 +24,6 @@ public class AuthToken {
                 Faker faker = new Faker();
                 String clientName = faker.name().firstName();
                 String clientEmail = faker.internet().emailAddress();
-
                 String body = String.format("""
                                 {
                                  "clientName": "%s",
@@ -33,7 +33,7 @@ public class AuthToken {
 
                 Response response = given().baseUri("https://simple-books-api.click")
                                 .basePath("/api-clients/")
-                                .contentType(ContentType.JSON)
+                                .contentType(ContentType.JSON) // valida que el content type de la petición sea JSON, si no lo es, la petición fallará con un error 415 Unsupported Media Type
                                 .body(body)
                                 .when()
                                 .post()
@@ -41,7 +41,7 @@ public class AuthToken {
                                 .statusCode(201)
                                 .log().all()
                                 .extract().response();
-                
+
                 System.out.println("Response: " + response.asString());
                 token = response.jsonPath().getString("accessToken");
                 System.out.println(ANSI_GREEN + "Token obtenido: " + token + ANSI_RESET);
@@ -117,7 +117,7 @@ public class AuthToken {
 
         }
 
-        @Test
+        @Test()
         public void testGetOrdersWithQueryAndPathParam() {
 
                 Response response = given()
@@ -135,4 +135,41 @@ public class AuthToken {
 
         }
 
+        @Test
+        public void testGetAllBooks() {
+                given()
+                                .baseUri("https://simple-books-api.click")
+                                .basePath("/books")
+                                .contentType(ContentType.JSON)
+                                .header("Authorization", "Bearer " + token)
+                                .when()
+                                .get()
+                                .then()
+                                .statusCode(200)
+                                .log().all();
+        }
+/*validacion de campos a través de un esquema JSON, 
+para asegurarnos de que la respuesta cumple con la estructura 
+esperada y contiene los campos necesarios:
+*/  
+@Test
+        public void testValidateQueryParametersSchema() {
+                given()
+                        .baseUri("https://simple-books-api.click")
+                        .queryParam("limit", 10)
+                        .queryParam("type", "fiction")
+                        .basePath("/books")
+                        .contentType(ContentType.JSON)
+                        .header("Authorization", "Bearer " + token)
+                        .when()
+                        .get()
+                        .then()
+                        .statusCode(200)
+                        .body(matchesJsonSchemaInClasspath("schemas/books-query-schema.json"))
+                        .log().all();
+
+
+
+                }
+        
 }
