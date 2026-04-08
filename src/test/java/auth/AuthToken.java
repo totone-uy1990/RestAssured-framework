@@ -165,7 +165,7 @@ esperada y contiene los campos necesarios:
                         .get()
                         .then()
                         .statusCode(200)
-                        .body(matchesJsonSchemaInClasspath("schemas/books-query-schema.json"))
+                        .body(matchesJsonSchemaInClasspath("schemas/books-schema.json"))
                         .log().all();
 
 

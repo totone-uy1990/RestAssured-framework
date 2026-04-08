@@ -1,24 +1,36 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Books Response",
+  "description": "Schema para validar la respuesta del endpoint GET /books",
   "type": "array",
   "items": {
     "type": "object",
+    "description": "Cada libro en la lista",
     "properties": {
       "id": {
-        "type": "integer"
+        "type": "integer",
+        "description": "ID único del libro",
+        "minimum": 1
       },
       "name": {
-        "type": "string"
+        "type": "string",
+        "description": "Título del libro",
+        "minLength": 1,
+        "maxLength": 200
       },
       "type": {
         "type": "string",
+        "description": "Tipo de libro",
         "enum": ["fiction", "non-fiction"]
       },
       "available": {
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Si el libro está disponible para préstamo"
       }
     },
-    "required": ["id", "name", "type", "available"]
-  }
+    "required": ["id", "name", "type", "available"],
+    "additionalProperties": false
+  },
+  "minItems": 0,
+  "uniqueItems": true
 }
