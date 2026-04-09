@@ -162,8 +162,9 @@ esperada y contiene los campos necesarios:
                         .contentType(ContentType.JSON)
                         .header("Authorization", "Bearer " + token)
                         .when()
-                        .get()
+                        .get()                        
                         .then()
+                        .assertThat()
                         .statusCode(200)
                         .body(matchesJsonSchemaInClasspath("schemas/books-schema.json"))
                         .log().all();

@@ -28,6 +28,12 @@ dependencies {
     // XML parsing con Jsoup
     testImplementation 'org.jsoup:jsoup:1.17.2'
 
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.40'
+    testCompileOnly 'org.projectlombok:lombok:1.18.40'
+    annotationProcessor 'org.projectlombok:lombok:1.18.40'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.40'
+
     implementation 'net.datafaker:datafaker:2.5.3'
 
 
