@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Order Response",
+  "description": "Schema para validar la respuesta del endpoint POST /orders",
+  "type": "object",
+  "properties": {
+    "created": {
+      "type": "boolean",
+      "description": "Indica si la orden fue creada exitosamente"
+    },
+    "orderId": {
+      "type": "string",
+      "description": "ID único de la orden creada",
+      "minLength": 1
+    }
+  },
+  "required": ["created", "orderId"],
+  "additionalProperties": false
+}

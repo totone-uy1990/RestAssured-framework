@@ -27,9 +27,8 @@ public class AuthTokenModelTest {
     @BeforeClass(alwaysRun = true)
     public void testGetToken() {
         ApiClientRequest requestPayload = new ApiClientRequest(
-            faker.name().firstName(),
-            faker.internet().emailAddress()
-        );
+                faker.name().firstName(),
+                faker.internet().emailAddress());
 
         ApiClientResponse responseModel = given()
                 .baseUri("https://simple-books-api.click")
@@ -47,15 +46,11 @@ public class AuthTokenModelTest {
         System.out.println(ANSI_GREEN + "Token deserializado: " + token + ANSI_RESET);
     }
 
-
-
-
     @Test
     public void testSubmitOrderAndDeserialize() {
         OrderRequest orderPayload = new OrderRequest(
-            faker.number().numberBetween(1, 6),
-            faker.name().fullName()
-        );
+                faker.number().numberBetween(1, 6),
+                faker.name().fullName());
 
         OrderResponse orderResponse = given()
                 .baseUri("https://simple-books-api.click")
@@ -71,7 +66,7 @@ public class AuthTokenModelTest {
                 .extract().as(OrderResponse.class);
 
         orderId = orderResponse.getOrderId();
-        
+
         Assert.assertTrue(orderResponse.isCreated());
         Assert.assertNotNull(orderId);
         System.out.println(ANSI_GREEN + "Order ID obtenido desde modelo: " + orderId + ANSI_RESET);
@@ -94,12 +89,19 @@ public class AuthTokenModelTest {
     }
 
     @Test
-    public void testGetOrdersAndDeserializeList() {  //validamos la consulta con parámetros y deserializamos la respuesta a un array de modelos
+    public void testGetOrdersAndDeserializeList() { // validamos la consulta con parámetros y deserializamos la
+                                                    // respuesta a un array de modelos
+
+        /*
+         * deserializamos la respuesta a un array de modelos para validar que se
+         * mapean correctamente los campos y luego hacemos algunas aserciones
+         * básicas sobre el contenido de la respuesta:
+         */
         BookResponse[] books = given()
                 .baseUri("https://simple-books-api.click")
+                .basePath("/books")
                 .queryParam("limit", 10)
                 .queryParam("type", "fiction")
-                .basePath("/books")
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
                 .when()
@@ -116,6 +118,10 @@ public class AuthTokenModelTest {
 
     @Test
     public void testValidateQueryParametersSchema() {
+        /*
+         * validamos que los parámetros de consulta
+         * cumplan con el esquema definido
+         */
         given()
                 .baseUri("https://simple-books-api.click")
                 .queryParam("limit", 10)

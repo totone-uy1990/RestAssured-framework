@@ -12,4 +12,4 @@ public class BookResponse {
     private String name;
     private String type;
     private boolean available;
-}
+}   
