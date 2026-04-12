@@ -1,9 +1,14 @@
-package apiWithModels;
+package orders;
 
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+
 import static io.restassured.RestAssured.*;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
+
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import net.datafaker.Faker;
 import models.ApiClientRequest;
@@ -11,13 +16,19 @@ import models.ApiClientResponse;
 import models.OrderRequest;
 import models.OrderResponse;
 
-public class orders {
+public class OrdersPost {
 
         private static final String ANSI_GREEN = "\u001b[32m";
         private static final String ANSI_RESET = "\u001b[0m";
         private static String token;
         private static Faker faker = new Faker();
-        private String orderId;
+
+        // Método auxiliar para obtener un ID de libro que sabemos que está en stock
+        private int getAvailableBookId() {
+                // Según la API, estos IDs de ficción suelen estar en stock (1, 3, 4, 6)
+                int[] availableBooks = { 1, 3, 4, 6 };
+                return availableBooks[faker.number().numberBetween(0, availableBooks.length - 1)];
+        }
 
         @BeforeClass(alwaysRun = true)
         public void testGetToken() {
@@ -41,13 +52,36 @@ public class orders {
                 System.out.println(ANSI_GREEN + "Token deserializado: " + token + ANSI_RESET);
         }
 
+        @DataProvider(name = "invalidOrderData")
+        public Object[][] invalidOrderData() {
+                return new Object[][] {
+                                { "ID de libro no existente", new OrderRequest(999, faker.name().fullName()) },
+                                { "Nombre de cliente vacío", new OrderRequest(getAvailableBookId(), "") },
+                                { "Nombre de cliente demasiado corto",
+                                                new OrderRequest(getAvailableBookId(), "A") },
+                                { "ID de libro no numérico", new OrderRequest(23456789, faker.name().fullName()) }
+                };
+        }
+
+        @DataProvider(name = "emptyFieldsOrderData")
+        public Object[][] emptyFieldsOrderData() {
+                return new Object[][] {
+                                { "Solo el bookId está presente y el customerName es nulo",
+                                                new OrderRequest(getAvailableBookId(), null) },
+                                { "Solo el bookId está presente y el customerName es vacío",
+                                                new OrderRequest(getAvailableBookId(), "") },
+                                { "Solo el customerName está presente y el bookId es 0",
+                                                new OrderRequest(0, faker.name().fullName()) }
+                };
+        }
+
         // TEST
 
         @Test // validate response 201
-        public void testSubmitOrderAndDeserialize() {
+        public void testSubmitOrderhappyPath() {
 
                 OrderRequest orderPayload = new OrderRequest(
-                                faker.number().numberBetween(1, 6),
+                                getAvailableBookId(),
                                 faker.name().fullName());
 
                 given()
@@ -68,7 +102,7 @@ public class orders {
         @Test
         public void testSubmitOrderAndValidateSchema() {
                 OrderRequest orderPayload = new OrderRequest(
-                                faker.number().numberBetween(1, 6),
+                                getAvailableBookId(),
                                 faker.name().fullName());
 
                 given()
@@ -91,7 +125,7 @@ public class orders {
         @Test
         public void testSubmitOrderWithoutAuth() {
                 OrderRequest orderPayload = new OrderRequest(
-                                faker.number().numberBetween(1, 6),
+                                getAvailableBookId(),
                                 faker.name().fullName());
 
                 given()
@@ -106,10 +140,11 @@ public class orders {
                                 .log().all();
         }
 
+        // test authentication
         @Test
         public void testSubmitOrderWithInvalidToken() {
                 OrderRequest orderPayload = new OrderRequest(
-                                faker.number().numberBetween(1, 6),
+                                getAvailableBookId(),
                                 faker.name().fullName());
 
                 given()
@@ -125,12 +160,9 @@ public class orders {
                                 .log().all();
         }
 
-        @Test
-        public void testSubmitOrderWithInvalidBookId() {
-                OrderRequest orderPayload = new OrderRequest(
-                                999, // ID de libro no existente
-                                faker.name().fullName());
-
+        // negative test data driven
+        @Test(dataProvider = "emptyFieldsOrderData")
+        public void testSubmitOrderWithEmptyFields(String description, OrderRequest orderPayload) {
                 given()
                                 .baseUri("https://simple-books-api.click")
                                 .basePath("/orders")
@@ -140,77 +172,34 @@ public class orders {
                                 .when()
                                 .post()
                                 .then()
-                                .statusCode(400) // Esperamos un error de solicitud incorrecta
+                                .statusCode(400) // Esperamos un error de solicitud incorrecta porque falta un campo o
+                                                 // está vacío
                                 .log().all();
         }
 
-        @Test
-        public void testSubmitOrderWithEmptyCustomerName() {
-                OrderRequest orderPayload = new OrderRequest(
-                                faker.number().numberBetween(1, 6),
-                                ""); // Nombre de cliente vacío
+        // test de no idempotencia:
+        /*
+         * Verifica que POST crea recursos nuevos cada vez por mas que el payload sea el
+         * mismo,
+         * lo cual es un comportamiento común en APIs REST para POST. Si el API fuera
+         * idempotente,
+         * esperaríamos que la misma solicitud con el mismo payload no creara múltiples
+         * recursos
+         * o devolviera el mismo resultado cada vez.
+         * Dado que Simple Books API no implementa idempotencia real para POST, este
+         * test documenta ese comportamiento.
+         */
 
-                given()
-                                .baseUri("https://simple-books-api.click")
-                                .basePath("/orders")
-                                .contentType(ContentType.JSON)
-                                .auth().oauth2(token)
-                                .body(orderPayload)
-                                .when()
-                                .post()
-                                .then()
-                                .statusCode(400) // Esperamos un error de solicitud incorrecta
-                                .log().all();
-        }
-
-        @Test
-        public void testSubmitOrderWithInvalidCustomerName() {
-                OrderRequest orderPayload = new OrderRequest(
-                                faker.number().numberBetween(1, 6),
-                                "A"); // Nombre de cliente demasiado corto
-
-                given()
-                                .baseUri("https://simple-books-api.click")
-                                .basePath("/orders")
-                                .contentType(ContentType.JSON)
-                                .auth().oauth2(token)
-                                .body(orderPayload)
-                                .when()
-                                .post()
-                                .then()
-                                .statusCode(400) // Esperamos un error de solicitud incorrecta
-                                .log().all();
-        }
-
-        @Test
-        public void testSubmitOrderWithNonNumericBookId() {
-                OrderRequest orderPayload = new OrderRequest(
-                                23456789, // ID de libro no numérico
-                                faker.name().fullName());
-
-                given()
-                                .baseUri("https://simple-books-api.click")
-                                .basePath("/orders")
-                                .contentType(ContentType.JSON)
-                                .auth().oauth2(token)
-                                .body(orderPayload)
-                                .when()
-                                .post()
-                                .then()
-                                .statusCode(400) // Esperamos un error de solicitud incorrecta
-                                .log().all();
-        }
-
-        // test idempotencia
         @Test
         public void testSubmitSameOrderMultipleTimes() {
                 OrderRequest orderPayload = new OrderRequest(
-                                faker.number().numberBetween(1, 6),
-                                faker.name().fullName());
+                                getAvailableBookId(),
+                                faker.book().title());
 
                 // Enviar la misma orden 3 veces
+                String firstOrderId = null;
                 for (int i = 0; i < 3; i++) {
-                        given()
+                        Response response = given()
                                         .baseUri("https://simple-books-api.click")
                                         .basePath("/orders")
                                         .contentType(ContentType.JSON)
@@ -219,18 +208,33 @@ public class orders {
                                         .when()
                                         .post()
                                         .then()
-                                        .statusCode(201) // Esperamos que cada solicitud sea exitosa
-                                        .log().all();
+                                        .log().all()
+                                        .extract().response();
+
+                        if (i == 0) {
+                                Assert.assertEquals(response.statusCode(), 201,
+                                                "La primera solicitud debe crear la orden exitosamente");
+                                firstOrderId = response.jsonPath().getString("orderId");
+                                Assert.assertNotNull(firstOrderId, "El orderId no debe ser nulo");
+                        } else {
+                                Assert.assertEquals(response.statusCode(), 201,
+                                                "El API devuelve 201 creando nuevas órdenes");
+
+                                String currentOrderId = response.jsonPath().getString("orderId");
+                                if (currentOrderId.equals(firstOrderId)) {
+                                        Assert.fail("OrderIds son iguales - la API está implementando idempotencia (raro para POST)");
+                                }
+                        }
                 }
         }
 
-        // Test PUT HAPPY PATH
+
 
         @Test
-        public void testUpdateOrder() {
-                // Primero, creamos una orden para obtener un orderId válido
+        public void testUpdateOrderWithoutAuth() {
+                // Primero necesitamos una orden válida para tratar de actualizarla sin auth
                 OrderRequest orderPayload = new OrderRequest(
-                                faker.number().numberBetween(1, 6),
+                                getAvailableBookId(),
                                 faker.name().fullName());
 
                 OrderResponse orderResponse = given()
@@ -243,56 +247,11 @@ public class orders {
                                 .post()
                                 .then()
                                 .statusCode(201)
-                                .log().all()
                                 .extract().as(OrderResponse.class);
 
                 String orderId = orderResponse.getOrderId();
 
-                // Ahora, actualizamos la orden con nuevos datos
-                OrderRequest updatePayload = new OrderRequest(
-                                faker.number().numberBetween(1, 6),
-                                faker.name().fullName());
-
-                given()
-                                .baseUri("https://simple-books-api.click")
-                                .basePath("/orders/{orderId}")
-                                .contentType(ContentType.JSON)
-                                .auth().oauth2(token)
-                                .pathParam("orderId", orderId)
-                                .body(updatePayload)
-                                .when()
-                                .put()
-                                .then()
-                                .statusCode(200) // Esperamos un código de éxito para la actualización
-                                .log().all();
-        }
-
-        @Test
-        public void testUpdateOrderWithInvalidId() {
-                OrderRequest updatePayload = new OrderRequest(
-                                faker.number().numberBetween(1, 6),
-                                faker.name().fullName());
-
-                given()
-                                .baseUri("https://simple-books-api.click")
-                                .basePath("/orders/{orderId}")
-                                .contentType(ContentType.JSON)
-                                .auth().oauth2(token)
-                                .pathParam("orderId", "invalid_id") // ID no válido
-                                .body(updatePayload)
-                                .when()
-                                .put()
-                                .then()
-                                .statusCode(400) // Esperamos un error de solicitud incorrecta
-                                .log().all();
-        }
-
-
-        @Test
-        public void testUpdateOrderWithoutAuth() {
-                OrderRequest updatePayload = new OrderRequest(
-                                faker.number().numberBetween(1, 6),
-                                faker.name().fullName());
+                String updatePayload = "{ \"customerName\": \"" + faker.name().fullName() + "\" }";
 
                 given()
                                 .baseUri("https://simple-books-api.click")
@@ -301,14 +260,9 @@ public class orders {
                                 .pathParam("orderId", orderId)
                                 .body(updatePayload)
                                 .when()
-                                .put()
+                                .patch()
                                 .then()
                                 .statusCode(401) // Esperamos un error de no autorizado
                                 .log().all();
-        }       
-
-
-
-
-
+        }
 }

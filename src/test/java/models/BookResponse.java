@@ -1,15 +1,19 @@
 package models;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
+@Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class BookResponse {
+
     private int id;
     private String name;
     private String type;
     private boolean available;
-}   
+
+}

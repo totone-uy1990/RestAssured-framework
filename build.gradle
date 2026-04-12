@@ -2,6 +2,12 @@ plugins {
     id 'java'
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 group = 'com.api.testing'
 version = '1.0.0'
 
@@ -29,7 +35,11 @@ dependencies {
     testImplementation 'org.jsoup:jsoup:1.17.2'
 
     // Lombok
-    testImplementation 'org.projectlombok:lombok:1.18.42'
+    testCompileOnly 'org.projectlombok:lombok:1.18.36'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
+    
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
 
 
     implementation 'net.datafaker:datafaker:2.5.3'
